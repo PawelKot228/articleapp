@@ -70,7 +70,7 @@
     axios.get(URL_CATEGORIES)
         .then(res => {
             console.log(res)
-            categories = res.data.status === 'OK'
+            categories = res.data.status === 'success'
                 ? res.data.data
                 : {};
             updateCategoriesList(categories);
@@ -83,7 +83,7 @@
         axios.get(`${URL_ARTICLES}/${id_cat}`)
             .then(res => {
                 console.log(res)
-                articles = res.data.status === 'OK'
+                articles = res.data.status === 'success'
                     ? res.data.data
                     : {};
 
