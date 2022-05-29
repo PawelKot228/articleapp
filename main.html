@@ -10,55 +10,64 @@
           integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
 
     <style>
-        .thumb{
+        .thumb {
             width: 100px;
             height: 100px;
             margin-right: 1rem;
         }
+
+        .img-fluid{
+            max-width: 128px;
+        }
+
+        .main {
+            display: flex;
+        }
+
+        .main .content {
+            flex: 1;
+        }
     </style>
 </head>
 <body>
-<header>
-    <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white" style="width: 380px;">
-        <a href="/" class="d-flex align-items-center flex-shrink-0 p-3 link-dark text-decoration-none border-bottom">
-            <svg class="bi me-2" width="30" height="24">
-                <use xlink:href="#bootstrap"></use>
-            </svg>
-            <span class="fs-5 fw-semibold">List group</span>
-        </a>
-        <div class="list-group list-group-flush border-bottom scrollarea" id="categories_list">
-            <!--            <div href="#" class="list-group-item list-group-item-action active py-3 lh-tight" aria-current="true">-->
-            <!--                <div class="d-flex w-100 align-items-center justify-content-between">-->
-            <!--                    <strong class="mb-1">List group item heading</strong>-->
-            <!--                    <small>Wed</small>-->
-            <!--                </div>-->
-            <!--                <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.</div>-->
-            <!--            </div>-->
-            <!--            <div href="#" class="list-group-item list-group-item-action py-3 lh-tight">-->
-            <!--                <div class="d-flex w-100 align-items-center justify-content-between">-->
-            <!--                    <strong class="mb-1">List group item heading</strong>-->
-            <!--                    <small class="text-muted">Tues</small>-->
-            <!--                </div>-->
-            <!--                <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.</div>-->
-            <!--            </div>-->
+<main class="main">
+    <header>
+        <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white" style="width: 380px;">
+            <a href="/"
+               class="d-flex align-items-center flex-shrink-0 p-3 link-dark text-decoration-none border-bottom">
+                <span class="fs-5 fw-semibold">List group</span>
+            </a>
+            <div class="list-group list-group-flush border-bottom scrollarea" id="categories_list">
+            </div>
+        </div>
+    </header>
+    <div class="content">
+        <div class="d-flex align-items-center flex-shrink-0 p-3 link-dark text-decoration-none border-bottom">
+            <span class="fs-5 fw-semibold">Articles</span>
+        </div>
+        <div class="container pt-4">
+            <div class="articles" id="articles_list">
+
+            </div>
+
         </div>
     </div>
-</header>
-<main style="margin-top: 58px">
-    <div class="container pt-4">
 
-
-    </div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
         crossorigin="anonymous"></script>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script>
+    const URL_CATEGORIES = "http://127.0.0.1:8000/api/article-category/get";
+    const URL_ARTICLES = "http://127.0.0.1:8000/api/article-category/get-articles";
 
-    const cats_element = document.getElementById('categories_list');
+    const cats_element = document.getElementById('categories_list')
+    const articles_element = document.getElementById('articles_list')
+
     let categories;
-    axios.get('http://127.0.0.1:8000/api/article-category/get')
+    let articles;
+    axios.get(URL_CATEGORIES)
         .then(res => {
             console.log(res)
             categories = res.data.status === 'OK'
@@ -68,26 +77,71 @@
         })
 
 
+    function updateArticleList(cat) {
+        const id_cat = cat.dataset.id;
+
+        axios.get(`${URL_ARTICLES}/${id_cat}`)
+            .then(res => {
+                console.log(res)
+                articles = res.data.status === 'OK'
+                    ? res.data.data
+                    : {};
+
+                articles_element.innerHTML = "";
+
+                articles.forEach(article => {
+                    let content = createArticleElement(article);
+                    articles_element.innerHTML += content;
+                })
+
+            })
+
+        console.log(id_cat)
+    }
+
+
+
+    function createArticleElement(article) {
+        let html = `<div class="row">`
+
+        //Article cover image
+        html += `<div class="col-md-4 mb-4">`
+        html += `    <div class="bg-image hover-overlay shadow-1-strong rounded ripple ripple-surface-light">`
+        html += `        <img src="${article.cover}" class="img-fluid">`
+        html += `    </div>`
+        html += `</div>`
+
+        //Article text
+        html += `<div class="col-md-8 mb-4">`
+        html += `<h5>${article.title}</h5>`
+        html += `<p>${article.lead}</p>`
+        html += `<button type="button" class="btn btn-primary">Read</button>`
+        html += `</div>`
+
+        html += `</div>`
+        return html;
+    }
+
     function updateCategoriesList(cats) {
         console.log(cats);
         cats_element.innerHTML = "";
         cats.forEach(cat => {
-            let content = createCategoryElement(cat.article_category_title, cat.article_category_lead, cat.cover);
+            let content = createCategoryElement(cat);
             cats_element.innerHTML += content
         })
 
     }
 
-    function createCategoryElement(title, desc, cover) {
-        let html = "<div href=\"#\" class=\"list-group-item list-group-item-action py-3 lh-tight d-flex \">";
+    function createCategoryElement(cat) {
+        let html = `<div href="#" class="list-group-item list-group-item-action d-flex py-3" id="category_element" data-id="${cat.id}" onclick="updateArticleList(this)">`;
 
-        if (cover) {
-            html += `<div><img class="thumb" src="${cover}" alt=""></div>`
+        if (cat.cover) {
+            html += `<div><img class="thumb" src="${cat.cover}" alt=""></div>`
         }
 
         html += `<div>`
-        html += `<strong class="mb-1">${title}</strong>`;
-        html += `<div class="col-10 mb-1 small">${desc}</div>`
+        html += `<strong class="mb-1">${cat.title}</strong>`;
+        html += `<div class="col-10 mb-1 small">${cat.lead}</div>`
         html += `</div>`
 
         html += "</div>";
