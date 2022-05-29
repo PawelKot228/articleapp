@@ -17,10 +17,12 @@ let articleCategoryView;
 // Listen for app to be ready
 app.on('ready', function () {
     // Create new window
-    mainView = new BrowserWindow({});
+    mainView = new BrowserWindow({
+        title: 'Articles'
+    });
     // Load html in window
     mainView.loadURL(url.format({
-        pathname: path.join(__dirname, 'main.html'),
+        pathname: path.join(__dirname, 'view/main.html'),
         protocol: 'file:',
         slashes: true
     }));

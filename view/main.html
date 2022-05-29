@@ -12,12 +12,19 @@
     <style>
         .thumb {
             width: 100px;
+            max-width: 100%;
             height: 100px;
             margin-right: 1rem;
+
         }
 
-        .img-fluid{
-            max-width: 128px;
+        .img-fluid {
+            /*max-width: 128px;*/
+            max-width: 100%;
+            width: 100%;
+            max-height: 256px;
+
+            object-fit: cover;
         }
 
         .main {
@@ -35,7 +42,7 @@
         <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white" style="width: 380px;">
             <a href="/"
                class="d-flex align-items-center flex-shrink-0 p-3 link-dark text-decoration-none border-bottom">
-                <span class="fs-5 fw-semibold">List group</span>
+                <span class="fs-5 fw-semibold">Categories</span>
             </a>
             <div class="list-group list-group-flush border-bottom scrollarea" id="categories_list">
             </div>
@@ -54,35 +61,79 @@
     </div>
 
 </main>
+
+<div class="modal fade" id="modal_article" tabindex="-1" aria-labelledby="modal_article" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal_articleLabel">Modal title</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="article-head"></div>
+                <div class="article-text"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
         crossorigin="anonymous"></script>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="../js/main.js"></script>
 <script>
-    const URL_CATEGORIES = "http://127.0.0.1:8000/api/article-category/get";
-    const URL_ARTICLES = "http://127.0.0.1:8000/api/article-category/get-articles";
+
 
     const cats_element = document.getElementById('categories_list')
     const articles_element = document.getElementById('articles_list')
+    const article_modal_element = document.getElementById('modal_article');
+    const article_modal = new bootstrap.Modal(article_modal_element);
 
     let categories;
     let articles;
+    let artcicle_buttons = {};
     axios.get(URL_CATEGORIES)
         .then(res => {
-            console.log(res)
             categories = res.data.status === 'success'
                 ? res.data.data
                 : {};
             updateCategoriesList(categories);
         })
 
+    function showArticleModal() {
+        const id = this.dataset.id;
+        axios.get(URL_ARTICLE(id))
+            .then(res => {
+                if (res.data.status === 'success') {
+                    let data = res.data.data;
+
+                    let article_title = article_modal_element.querySelector('#modal_articleLabel')
+                    let article_head = article_modal_element.querySelector('.article-head')
+                    let article_text = article_modal_element.querySelector('.article-text')
+
+                    article_title.innerHTML = data.title
+                    article_head.innerHTML = createArticleElement(data, false)
+                    article_text.innerHTML = data.text
+
+                } else {
+                    alert(res.data.message)
+                }
+
+
+                article_modal.show();
+            })
+    }
 
     function updateArticleList(cat) {
         const id_cat = cat.dataset.id;
 
-        axios.get(`${URL_ARTICLES}/${id_cat}`)
+        axios.get(URL_ARTICLES(id_cat))
             .then(res => {
-                console.log(res)
                 articles = res.data.status === 'success'
                     ? res.data.data
                     : {};
@@ -94,60 +145,24 @@
                     articles_element.innerHTML += content;
                 })
 
+            }).then(() => {
+            artcicle_buttons = articles_element.querySelectorAll('.article_button')
+
+            artcicle_buttons.forEach(btn => {
+                btn.addEventListener('click', showArticleModal)
             })
-
-        console.log(id_cat)
+        })
     }
 
-
-
-    function createArticleElement(article) {
-        let html = `<div class="row">`
-
-        //Article cover image
-        html += `<div class="col-md-4 mb-4">`
-        html += `    <div class="bg-image hover-overlay shadow-1-strong rounded ripple ripple-surface-light">`
-        html += `        <img src="${article.cover}" class="img-fluid">`
-        html += `    </div>`
-        html += `</div>`
-
-        //Article text
-        html += `<div class="col-md-8 mb-4">`
-        html += `<h5>${article.title}</h5>`
-        html += `<p>${article.lead}</p>`
-        html += `<button type="button" class="btn btn-primary">Read</button>`
-        html += `</div>`
-
-        html += `</div>`
-        return html;
-    }
 
     function updateCategoriesList(cats) {
-        console.log(cats);
         cats_element.innerHTML = "";
         cats.forEach(cat => {
             let content = createCategoryElement(cat);
             cats_element.innerHTML += content
         })
-
     }
 
-    function createCategoryElement(cat) {
-        let html = `<div href="#" class="list-group-item list-group-item-action d-flex py-3" id="category_element" data-id="${cat.id}" onclick="updateArticleList(this)">`;
-
-        if (cat.cover) {
-            html += `<div><img class="thumb" src="${cat.cover}" alt=""></div>`
-        }
-
-        html += `<div>`
-        html += `<strong class="mb-1">${cat.title}</strong>`;
-        html += `<div class="col-10 mb-1 small">${cat.lead}</div>`
-        html += `</div>`
-
-        html += "</div>";
-
-        return html;
-    }
 
 </script>
 
