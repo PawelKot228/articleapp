@@ -1,0 +1,19 @@
+{
+  "name": "articleapp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Pawel Kot",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "bootstrap": "^5.1.3",
+    "electron": "^19.0.1"
+  },
+  "devDependencies": {
+    "electron-reloader": "^1.2.3"
+  }
+}
