@@ -3,10 +3,10 @@ const path = require('path');
 const url = require('url');
 const axios = require('axios')
 
-require('electron-reloader');
 
 // SET ENV
-process.env.NODE_ENV = 'development';
+process.env.NODE_ENV = 'production';
+// process.env.NODE_ENV = 'development';
 
 const {app, BrowserWindow, Menu, ipcMain} = electron;
 
@@ -47,7 +47,6 @@ app.on('ready', function () {
 
 // Menu array
 const mainMenuTemplate = [
-    // Each object is a dropdown
     {
         label: 'File',
         submenu: [
